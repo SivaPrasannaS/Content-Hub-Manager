@@ -1,0 +1,11 @@
+node_modules/
+backend/target/
+frontend/build/
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+uploads/
+.vscode/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,45 @@
+{
+  "groups": [
+    {
+      "name": "app.jwt",
+      "type": "com.chm.config.JwtConfig",
+      "sourceType": "com.chm.config.JwtConfig",
+      "description": "JWT authentication settings for the Content Hub Manager backend."
+    },
+    {
+      "name": "app.cors",
+      "type": "java.lang.String",
+      "sourceType": "com.chm.config.SecurityConfig",
+      "description": "CORS settings consumed by the backend security configuration."
+    }
+  ],
+  "properties": [
+    {
+      "name": "app.jwt.secret",
+      "type": "java.lang.String",
+      "sourceType": "com.chm.config.JwtConfig",
+      "description": "Secret key used to sign and verify JWT access and refresh tokens."
+    },
+    {
+      "name": "app.jwt.expiration-ms",
+      "type": "java.lang.Long",
+      "sourceType": "com.chm.config.JwtConfig",
+      "defaultValue": 900000,
+      "description": "Access token lifetime in milliseconds."
+    },
+    {
+      "name": "app.jwt.refresh-expiration-ms",
+      "type": "java.lang.Long",
+      "sourceType": "com.chm.config.JwtConfig",
+      "defaultValue": 604800000,
+      "description": "Refresh token lifetime in milliseconds."
+    },
+    {
+      "name": "app.cors.allowed-origins",
+      "type": "java.lang.String",
+      "sourceType": "com.chm.config.SecurityConfig",
+      "defaultValue": "http://localhost:3000",
+      "description": "Allowed frontend origin for cross-origin requests."
+    }
+  ]
+}
