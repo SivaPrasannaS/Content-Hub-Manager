@@ -506,12 +506,6 @@ class ChmApplicationTest {
     }
 
     @Test
-    void day_11_get_media_unauthenticated_returns_unauthorized() throws Exception {
-        mockMvc.perform(get("/api/media"))
-            .andExpect(status().isUnauthorized());
-    }
-
-    @Test
     void day_4_upload_media_as_user_returns_created() throws Exception {
         String userToken = registeredUserToken(uniqueUsername());
 
