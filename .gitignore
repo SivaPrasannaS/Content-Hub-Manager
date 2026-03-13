@@ -1,11 +1,9 @@
-node_modules/
-backend/target/
-frontend/build/
-frontend/.env.local
-frontend/.env.development.local
-frontend/.env.test.local
-frontend/.env.production.local
-uploads/
 .vscode/
+backend/target/
+frontend/node_modules/
+frontend/build/
+frontend/coverage/
+frontend/.cache/
+*.log
 .DS_Store
 Thumbs.db
