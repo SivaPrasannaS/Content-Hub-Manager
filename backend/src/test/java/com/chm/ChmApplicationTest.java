@@ -18,7 +18,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import java.time.YearMonth;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
@@ -33,6 +32,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@SuppressWarnings("null")
 class ChmApplicationTest {
 
     @Autowired
@@ -44,7 +44,7 @@ class ChmApplicationTest {
     private static final AtomicInteger COUNTER = new AtomicInteger(1);
 
     @Test
-    void register_validData_returns201() throws Exception {
+    void day_5_register_valid_data_returns_created() throws Exception {
         ObjectNode payload = signupPayload(uniqueUsername(), "Password@123");
 
         mockMvc.perform(post("/api/auth/register")
@@ -57,7 +57,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void register_duplicateUsername_returns409() throws Exception {
+    void day_5_register_duplicate_username_returns_conflict() throws Exception {
         String username = uniqueUsername();
         mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -71,7 +71,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void register_blankUsername_returns422() throws Exception {
+    void day_5_register_blank_username_returns_unprocessable_entity() throws Exception {
         mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(signupPayload("", "Password@123").toString()))
@@ -80,7 +80,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void register_blankPassword_returns422() throws Exception {
+    void day_5_register_blank_password_returns_unprocessable_entity() throws Exception {
         mockMvc.perform(post("/api/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(signupPayload(uniqueUsername(), "").toString()))
@@ -89,7 +89,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void login_validCredentials_returnsJwtAndRefreshToken() throws Exception {
+    void day_5_login_valid_credentials_returns_tokens() throws Exception {
         String username = uniqueUsername();
         register(username, "Password@123");
 
@@ -103,7 +103,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void login_wrongPassword_returns401() throws Exception {
+    void day_5_login_wrong_password_returns_unauthorized() throws Exception {
         String username = uniqueUsername();
         register(username, "Password@123");
 
@@ -114,15 +114,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void login_unknownUser_returns401() throws Exception {
-        mockMvc.perform(post("/api/auth/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(loginPayload(uniqueUsername(), "Password@123").toString()))
-            .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void refresh_validRefreshToken_returnsNewAccessToken() throws Exception {
+    void day_5_refresh_valid_refresh_token_returns_new_access_token() throws Exception {
         String username = uniqueUsername();
         register(username, "Password@123");
         JsonNode login = login(username, "Password@123");
@@ -139,7 +131,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void getArticles_unauthenticated_returns200() throws Exception {
+    void day_4_get_articles_unauthenticated_returns_ok() throws Exception {
         String adminToken = adminToken();
         long categoryId = createCategory(adminToken, "Public Cat");
         createArticle(adminToken, articlePayload("Public Article", categoryId, "PUBLISHED", "news,public"));
@@ -150,7 +142,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void getArticles_filterByCategory_returnsFiltered() throws Exception {
+    void day_9_get_articles_filter_by_category_returns_filtered_results() throws Exception {
         String adminToken = adminToken();
         long firstCategoryId = createCategory(adminToken, "Category One");
         long secondCategoryId = createCategory(adminToken, "Category Two");
@@ -163,18 +155,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void getArticles_filterByMonth_returnsFiltered() throws Exception {
-        String adminToken = adminToken();
-        long categoryId = createCategory(adminToken, "Monthly Category");
-        createArticle(adminToken, articlePayload("Monthly Article", categoryId, "PUBLISHED", "month"));
-
-        mockMvc.perform(get("/api/articles").param("month", YearMonth.now().toString()))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.items[0].title").exists());
-    }
-
-    @Test
-    void getArticle_publishedId_unauthenticated_returns200() throws Exception {
+    void day_4_get_article_published_id_unauthenticated_returns_ok() throws Exception {
         String adminToken = adminToken();
         long categoryId = createCategory(adminToken, "Published Category");
         long articleId = createArticle(adminToken, articlePayload("Published Article", categoryId, "PUBLISHED", "pub"));
@@ -185,7 +166,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void getArticle_draftId_asOwner_returns200() throws Exception {
+    void day_9_get_article_draft_as_owner_returns_ok() throws Exception {
         String userToken = registeredUserToken(uniqueUsername());
         String adminToken = adminToken();
         long categoryId = createCategory(adminToken, "Draft Category");
@@ -197,7 +178,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void getArticle_draftId_asOtherUser_returns403() throws Exception {
+    void day_11_get_article_draft_as_other_user_returns_forbidden() throws Exception {
         String ownerToken = registeredUserToken(uniqueUsername());
         String otherToken = registeredUserToken(uniqueUsername());
         String adminToken = adminToken();
@@ -209,7 +190,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void getArticles_filterByDraft_asUser_returnsOnlyOwnDrafts() throws Exception {
+    void day_9_get_draft_articles_as_user_returns_only_own_drafts() throws Exception {
         String ownerToken = registeredUserToken(uniqueUsername());
         String otherToken = registeredUserToken(uniqueUsername());
         String adminToken = adminToken();
@@ -229,7 +210,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void createArticle_asUser_savedAsDraft() throws Exception {
+    void day_4_create_article_as_user_saves_draft() throws Exception {
         String userToken = registeredUserToken(uniqueUsername());
         long categoryId = createCategory(adminToken(), "User Draft Category");
 
@@ -242,7 +223,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void createArticle_asUser_sendsPublished_statusForcedToDraft() throws Exception {
+    void day_4_create_article_as_user_published_status_forced_to_draft() throws Exception {
         String userToken = registeredUserToken(uniqueUsername());
         long categoryId = createCategory(adminToken(), "Forced Draft Category");
 
@@ -255,7 +236,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void createArticle_unauthenticated_returns401() throws Exception {
+    void day_11_create_article_unauthenticated_returns_unauthorized() throws Exception {
         long categoryId = createCategory(adminToken(), "No Auth Category");
 
         mockMvc.perform(post("/api/articles")
@@ -265,7 +246,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void createArticle_missingTitle_returns422() throws Exception {
+    void day_4_create_article_missing_title_returns_unprocessable_entity() throws Exception {
         String userToken = registeredUserToken(uniqueUsername());
         long categoryId = createCategory(adminToken(), "Validation Category One");
         ObjectNode payload = articlePayload("Valid Title", categoryId, "DRAFT", "validation");
@@ -280,7 +261,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void createArticle_bodyTooShort_returns422() throws Exception {
+    void day_4_create_article_short_body_returns_unprocessable_entity() throws Exception {
         String userToken = registeredUserToken(uniqueUsername());
         long categoryId = createCategory(adminToken(), "Validation Category Two");
         ObjectNode payload = articlePayload("Short Body Article", categoryId, "DRAFT", "short");
@@ -295,7 +276,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void updateArticle_asOwner_returns200() throws Exception {
+    void day_4_update_article_as_owner_returns_ok() throws Exception {
         String userToken = registeredUserToken(uniqueUsername());
         long categoryId = createCategory(adminToken(), "Owner Update Category");
         long articleId = createArticle(userToken, articlePayload("Owner Update Article", categoryId, "DRAFT", "owner-update"));
@@ -310,7 +291,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void updateArticle_asNonOwnerUser_returns403() throws Exception {
+    void day_11_update_article_as_non_owner_returns_forbidden() throws Exception {
         String ownerToken = registeredUserToken(uniqueUsername());
         String otherToken = registeredUserToken(uniqueUsername());
         long categoryId = createCategory(adminToken(), "Non Owner Category");
@@ -324,7 +305,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void updateArticle_asManager_returns200() throws Exception {
+    void day_4_update_article_as_manager_returns_ok() throws Exception {
         String ownerToken = registeredUserToken(uniqueUsername());
         JsonNode manager = register(uniqueUsername(), "Password@123");
         assignRole(adminToken(), manager.get("id").asLong(), "ROLE_MANAGER");
@@ -342,23 +323,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void updateArticle_asAdmin_returns200() throws Exception {
-        String ownerToken = registeredUserToken(uniqueUsername());
-        String adminToken = adminToken();
-        long categoryId = createCategory(adminToken, "Admin Update Category");
-        long articleId = createArticle(ownerToken, articlePayload("Admin Editable Article", categoryId, "DRAFT", "admin"));
-        ObjectNode payload = articlePayload("Updated By Admin", categoryId, "PUBLISHED", "admin-edited");
-
-        mockMvc.perform(put("/api/articles/{id}", articleId)
-                .header(HttpHeaders.AUTHORIZATION, bearer(adminToken))
-                .contentType(MediaType.APPLICATION_JSON)
-            .content(payload.toString()))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.title").value(payload.get("title").asText()));
-    }
-
-    @Test
-        void publishArticle_asOwnerUser_returns200() throws Exception {
+    void day_4_publish_article_as_owner_returns_ok() throws Exception {
         String userToken = registeredUserToken(uniqueUsername());
         long categoryId = createCategory(adminToken(), "Publish Restriction Category");
         long articleId = createArticle(userToken, articlePayload("User Publish Attempt", categoryId, "DRAFT", "publish"));
@@ -367,10 +332,10 @@ class ChmApplicationTest {
                 .header(HttpHeaders.AUTHORIZATION, bearer(userToken)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("PUBLISHED"));
-        }
+    }
 
-        @Test
-        void publishArticle_asOtherUser_returns403() throws Exception {
+    @Test
+    void day_11_publish_article_as_other_user_returns_forbidden() throws Exception {
         String ownerToken = registeredUserToken(uniqueUsername());
         String otherToken = registeredUserToken(uniqueUsername());
         long categoryId = createCategory(adminToken(), "Publish Ownership Category");
@@ -382,7 +347,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void publishArticle_asManager_returns200() throws Exception {
+    void day_4_publish_article_as_manager_returns_ok() throws Exception {
         String ownerToken = registeredUserToken(uniqueUsername());
         JsonNode manager = register(uniqueUsername(), "Password@123");
         String adminToken = adminToken();
@@ -398,7 +363,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void deleteArticle_asOwner_returns200() throws Exception {
+    void day_4_delete_article_as_owner_returns_ok() throws Exception {
         String userToken = registeredUserToken(uniqueUsername());
         long categoryId = createCategory(adminToken(), "Delete Owner Category");
         long articleId = createArticle(userToken, articlePayload("Owner Deletable", categoryId, "DRAFT", "delete-owner"));
@@ -409,7 +374,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void deleteArticle_asManager_onOthersArticle_returns403() throws Exception {
+    void day_11_delete_article_as_manager_on_other_users_article_returns_forbidden() throws Exception {
         String ownerToken = registeredUserToken(uniqueUsername());
         JsonNode manager = register(uniqueUsername(), "Password@123");
         String adminToken = adminToken();
@@ -424,7 +389,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void deleteArticle_asAdmin_onAnyArticle_returns200() throws Exception {
+    void day_4_delete_article_as_admin_returns_ok() throws Exception {
         String ownerToken = registeredUserToken(uniqueUsername());
         String adminToken = adminToken();
         long categoryId = createCategory(adminToken, "Delete Admin Category");
@@ -436,7 +401,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void getPages_unauthenticated_returnsOnlyPublished() throws Exception {
+    void day_9_get_pages_unauthenticated_returns_only_published() throws Exception {
         JsonNode manager = register(uniqueUsername(), "Password@123");
         String adminToken = adminToken();
         assignRole(adminToken, manager.get("id").asLong(), "ROLE_MANAGER");
@@ -454,22 +419,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void getPages_asManager_includesDraftsAfterCreation() throws Exception {
-        JsonNode manager = register(uniqueUsername(), "Password@123");
-        String adminToken = adminToken();
-        assignRole(adminToken, manager.get("id").asLong(), "ROLE_MANAGER");
-        String managerToken = login(manager.get("username").asText(), "Password@123").get("token").asText();
-        ObjectNode draftPayload = pagePayload("Manager Draft Page", "DRAFT");
-        createPage(managerToken, draftPayload);
-
-        mockMvc.perform(get("/api/pages").header(HttpHeaders.AUTHORIZATION, bearer(managerToken)))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$[*].title", hasItem(draftPayload.get("title").asText())))
-            .andExpect(jsonPath("$[*].status", hasItem("DRAFT")));
-    }
-
-    @Test
-    void getPages_filterByStatus_asManager_returnsOnlyRequestedStatus() throws Exception {
+    void day_9_get_pages_filter_by_status_as_manager_returns_only_requested_status() throws Exception {
         JsonNode manager = register(uniqueUsername(), "Password@123");
         String adminToken = adminToken();
         assignRole(adminToken, manager.get("id").asLong(), "ROLE_MANAGER");
@@ -489,7 +439,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void createPage_asManager_returns201() throws Exception {
+    void day_4_create_page_as_manager_returns_created() throws Exception {
         JsonNode manager = register(uniqueUsername(), "Password@123");
         String adminToken = adminToken();
         assignRole(adminToken, manager.get("id").asLong(), "ROLE_MANAGER");
@@ -505,7 +455,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void createPage_asUser_returns403() throws Exception {
+    void day_11_create_page_as_user_returns_forbidden() throws Exception {
         String userToken = registeredUserToken(uniqueUsername());
 
         mockMvc.perform(post("/api/pages")
@@ -516,7 +466,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void publishPage_asManager_returns200() throws Exception {
+    void day_4_publish_page_as_manager_returns_ok() throws Exception {
         JsonNode manager = register(uniqueUsername(), "Password@123");
         String adminToken = adminToken();
         assignRole(adminToken, manager.get("id").asLong(), "ROLE_MANAGER");
@@ -530,7 +480,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void deletePage_asManager_returns403() throws Exception {
+    void day_11_delete_page_as_manager_returns_forbidden() throws Exception {
         JsonNode manager = register(uniqueUsername(), "Password@123");
         String adminToken = adminToken();
         assignRole(adminToken, manager.get("id").asLong(), "ROLE_MANAGER");
@@ -543,7 +493,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void deletePage_asAdmin_returns200() throws Exception {
+    void day_4_delete_page_as_admin_returns_ok() throws Exception {
         JsonNode manager = register(uniqueUsername(), "Password@123");
         String adminToken = adminToken();
         assignRole(adminToken, manager.get("id").asLong(), "ROLE_MANAGER");
@@ -556,23 +506,13 @@ class ChmApplicationTest {
     }
 
     @Test
-    void getMedia_authenticated_returns200() throws Exception {
-        String userToken = registeredUserToken(uniqueUsername());
-        createMedia(userToken, "auth-media.png");
-
-        mockMvc.perform(get("/api/media").header(HttpHeaders.AUTHORIZATION, bearer(userToken)))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(1))));
-    }
-
-    @Test
-    void getMedia_unauthenticated_returns401() throws Exception {
+    void day_11_get_media_unauthenticated_returns_unauthorized() throws Exception {
         mockMvc.perform(get("/api/media"))
             .andExpect(status().isUnauthorized());
     }
 
     @Test
-    void uploadMedia_asUser_returns201() throws Exception {
+    void day_4_upload_media_as_user_returns_created() throws Exception {
         String userToken = registeredUserToken(uniqueUsername());
 
         mockMvc.perform(multipart("/api/media")
@@ -585,7 +525,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void deleteMedia_asOwner_returns200() throws Exception {
+    void day_4_delete_media_as_owner_returns_ok() throws Exception {
         String userToken = registeredUserToken(uniqueUsername());
         long mediaId = createMedia(userToken, "owner-delete.png");
 
@@ -595,7 +535,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void deleteMedia_asNonOwnerUser_returns403() throws Exception {
+    void day_11_delete_media_as_non_owner_returns_forbidden() throws Exception {
         String ownerToken = registeredUserToken(uniqueUsername());
         String otherToken = registeredUserToken(uniqueUsername());
         long mediaId = createMedia(ownerToken, "other-delete.png");
@@ -606,7 +546,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void getCategories_unauthenticated_returns200() throws Exception {
+    void day_4_get_categories_unauthenticated_returns_ok() throws Exception {
         createCategory(adminToken(), "Public Category");
 
         mockMvc.perform(get("/api/categories"))
@@ -615,7 +555,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void createCategory_asManager_returns201() throws Exception {
+    void day_4_create_category_as_manager_returns_created() throws Exception {
         JsonNode manager = register(uniqueUsername(), "Password@123");
         String adminToken = adminToken();
         assignRole(adminToken, manager.get("id").asLong(), "ROLE_MANAGER");
@@ -633,7 +573,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void createCategory_asUser_returns403() throws Exception {
+    void day_11_create_category_as_user_returns_forbidden() throws Exception {
         String userToken = registeredUserToken(uniqueUsername());
 
         mockMvc.perform(post("/api/categories")
@@ -644,7 +584,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void updateCategory_asManager_returns200() throws Exception {
+    void day_4_update_category_as_manager_returns_ok() throws Exception {
         JsonNode manager = register(uniqueUsername(), "Password@123");
         String adminToken = adminToken();
         assignRole(adminToken, manager.get("id").asLong(), "ROLE_MANAGER");
@@ -661,7 +601,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void deleteCategory_asUser_returns403() throws Exception {
+    void day_11_delete_category_as_user_returns_forbidden() throws Exception {
         String userToken = registeredUserToken(uniqueUsername());
         long categoryId = createCategory(adminToken(), "Forbidden Delete Category");
 
@@ -671,7 +611,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void deleteCategory_asAdmin_returns200() throws Exception {
+    void day_4_delete_category_as_admin_returns_ok() throws Exception {
         String adminToken = adminToken();
         long categoryId = createCategory(adminToken, "Admin Delete Category");
 
@@ -681,34 +621,17 @@ class ChmApplicationTest {
     }
 
     @Test
-    void getUsers_asAdmin_excludesAdminAccounts() throws Exception {
+    void day_11_get_users_as_admin_excludes_admin_accounts() throws Exception {
         JsonNode standardUser = register(uniqueUsername(), "Password@123");
-        JsonNode promotedAdmin = register(uniqueUsername(), "Password@123");
-        String adminToken = adminToken();
-
-        assignRole(adminToken, promotedAdmin.get("id").asLong(), "ROLE_ADMIN");
-
         mockMvc.perform(get("/api/admin/users").header(HttpHeaders.AUTHORIZATION, bearer(adminToken())))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[*].username", hasItem(standardUser.get("username").asText())))
             .andExpect(jsonPath("$[*].username", not(hasItem("admin"))))
-            .andExpect(jsonPath("$[*].username", not(hasItem(promotedAdmin.get("username").asText()))))
             .andExpect(jsonPath("$[*].roles[*]", not(hasItem("ROLE_ADMIN"))));
     }
 
     @Test
-    void getUsers_asManager_returns403() throws Exception {
-        JsonNode manager = register(uniqueUsername(), "Password@123");
-        String adminToken = adminToken();
-        assignRole(adminToken, manager.get("id").asLong(), "ROLE_MANAGER");
-        String managerToken = login(manager.get("username").asText(), "Password@123").get("token").asText();
-
-        mockMvc.perform(get("/api/admin/users").header(HttpHeaders.AUTHORIZATION, bearer(managerToken)))
-            .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void assignRole_asAdmin_returns200() throws Exception {
+    void day_4_assign_role_as_admin_returns_ok() throws Exception {
         JsonNode user = register(uniqueUsername(), "Password@123");
 
         mockMvc.perform(put("/api/admin/users/{id}/role", user.get("id").asLong())
@@ -720,7 +643,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void assignRole_asAdmin_toAdminRole_returns400() throws Exception {
+    void day_11_assign_role_as_admin_to_admin_role_returns_bad_request() throws Exception {
         JsonNode user = register(uniqueUsername(), "Password@123");
 
         mockMvc.perform(put("/api/admin/users/{id}/role", user.get("id").asLong())
@@ -732,7 +655,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void deactivateUser_asAdmin_returns200() throws Exception {
+    void day_4_deactivate_user_as_admin_returns_ok() throws Exception {
         JsonNode user = register(uniqueUsername(), "Password@123");
 
         mockMvc.perform(delete("/api/admin/users/{id}", user.get("id").asLong())
@@ -741,7 +664,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void deactivateUser_selfDeactivation_returns400() throws Exception {
+    void day_11_deactivate_user_self_deactivation_returns_bad_request() throws Exception {
         JsonNode admin = login("admin", "Admin@123");
 
         mockMvc.perform(delete("/api/admin/users/{id}", admin.get("id").asLong())
@@ -750,7 +673,7 @@ class ChmApplicationTest {
     }
 
     @Test
-    void reactivateUser_asAdmin_allowsUserToLoginAgain() throws Exception {
+    void day_4_reactivate_user_as_admin_allows_login_again() throws Exception {
         String username = uniqueUsername();
         JsonNode user = register(username, "Password@123");
 

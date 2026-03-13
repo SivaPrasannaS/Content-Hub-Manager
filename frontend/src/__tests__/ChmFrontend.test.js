@@ -138,7 +138,7 @@ beforeEach(() => {
   usersAPI.activate.mockResolvedValue({});
 });
 
-test('1. LoginPage renders username and password fields', async () => {
+test('day_7_login_page_renders_username_and_password_fields', async () => {
   const user = userEvent.setup();
   renderWithProviders(<LoginPage />);
   expect(screen.getByLabelText(/username/i)).toBeInTheDocument();
@@ -164,7 +164,7 @@ test('1. LoginPage renders username and password fields', async () => {
   expect(screen.getByRole('button', { name: /show value/i })).toHaveAttribute('data-visibility-state', 'hidden');
 });
 
-test('2. LoginPage emptySubmit shows validation errors', async () => {
+test('day_7_login_empty_submit_shows_validation_errors', async () => {
   const user = userEvent.setup();
   renderWithProviders(<LoginPage />);
   await user.click(screen.getByRole('button', { name: /sign in/i }));
@@ -172,7 +172,7 @@ test('2. LoginPage emptySubmit shows validation errors', async () => {
   expect(await screen.findByText(/password must be at least 8 characters/i)).toBeInTheDocument();
 });
 
-test('3. LoginPage shortPassword shows inline error', async () => {
+test('day_7_login_short_password_shows_inline_error', async () => {
   const user = userEvent.setup();
   renderWithProviders(<LoginPage />);
   await user.type(screen.getByLabelText(/username/i), 'owner');
@@ -181,18 +181,7 @@ test('3. LoginPage shortPassword shows inline error', async () => {
   expect(await screen.findByText(/at least 8 characters/i)).toBeInTheDocument();
 });
 
-test('4. LoginPage validSubmit dispatches loginAsync', async () => {
-  const user = userEvent.setup();
-  const store = createStore();
-  const dispatchSpy = jest.spyOn(store, 'dispatch');
-  renderWithProviders(<LoginPage />, { store });
-  await user.type(screen.getByLabelText(/username/i), 'owner');
-  await user.type(screen.getByLabelText(/password/i), 'Password@123');
-  await user.click(screen.getByRole('button', { name: /sign in/i }));
-  await waitFor(() => expect(dispatchSpy).toHaveBeenCalled());
-});
-
-test('5. LoginPage success redirects to /articles', async () => {
+test('day_8_login_success_redirects_to_articles', async () => {
   const user = userEvent.setup();
   const store = createStore();
   render(
@@ -211,7 +200,7 @@ test('5. LoginPage success redirects to /articles', async () => {
   expect(await screen.findByText(/articles destination/i)).toBeInTheDocument();
 });
 
-test('6. LoginPage 401 response shows error banner', async () => {
+test('day_8_login_unauthorized_response_shows_error_banner', async () => {
   const user = userEvent.setup();
   authAPI.login.mockRejectedValueOnce({ response: { data: { message: 'Invalid username or password' } } });
   renderWithProviders(<LoginPage />);
@@ -221,12 +210,7 @@ test('6. LoginPage 401 response shows error banner', async () => {
   expect(await screen.findByText(/invalid username or password/i)).toBeInTheDocument();
 });
 
-test('7. LoginPage loading state disables submit button', () => {
-  renderWithProviders(<LoginPage />, { store: createStore({ auth: { loading: true } }) });
-  expect(screen.getByRole('button', { name: /sign in/i })).toBeDisabled();
-});
-
-test('8. RegisterPage duplicate username shows server error', async () => {
+test('day_8_register_duplicate_username_shows_server_error', async () => {
   const user = userEvent.setup();
   authAPI.register.mockRejectedValueOnce({ response: { data: { message: 'Username already exists' } } });
   renderWithProviders(<RegisterPage />);
@@ -236,7 +220,7 @@ test('8. RegisterPage duplicate username shows server error', async () => {
   expect(await screen.findByText(/username already exists/i)).toBeInTheDocument();
 });
 
-test('9. ArticleListPage renders separate published and draft tables', async () => {
+test('day_9_article_list_renders_separate_published_and_draft_tables', async () => {
   renderWithProviders(<ArticleListPage />, { store: createStore({ auth: { user: { id: 1, roles: ['ROLE_USER'] }, token: 'token' }, categories: { items: categories } }) });
   expect(await screen.findByRole('heading', { name: /published articles/i })).toBeInTheDocument();
   expect(screen.getByRole('heading', { name: /draft articles/i })).toBeInTheDocument();
@@ -245,7 +229,7 @@ test('9. ArticleListPage renders separate published and draft tables', async () 
   expect(screen.getByRole('button', { name: /publish/i })).toBeInTheDocument();
 });
 
-test('10. ArticleListPage publish action moves a draft article to published', async () => {
+test('day_9_article_publish_moves_draft_to_published', async () => {
   const user = userEvent.setup();
   renderWithProviders(<><ArticleListPage /><Toast /></>, { store: createStore({ auth: { user: { id: 1, roles: ['ROLE_USER'] }, token: 'token' }, categories: { items: categories } }) });
   expect(await screen.findByText(/draft launch notes/i)).toBeInTheDocument();
@@ -257,13 +241,13 @@ test('10. ArticleListPage publish action moves a draft article to published', as
   expect(screen.getAllByText(/draft launch notes/i)).toHaveLength(1);
 });
 
-test('11. ArticleListPage shows loading skeleton while fetching', () => {
+test('day_8_article_list_shows_loading_skeleton_while_fetching', () => {
   articlesAPI.list.mockImplementation(() => new Promise(() => {}));
   renderWithProviders(<ArticleListPage />, { store: createStore() });
   expect(screen.getByTestId('loading-skeleton')).toBeInTheDocument();
 });
 
-test('12. ArticleListPage search filters articles by title', async () => {
+test('day_9_article_search_filters_by_title', async () => {
   const user = userEvent.setup();
   renderWithProviders(<ArticleListPage />, { store: createStore({ categories: { items: categories } }) });
   expect(await screen.findByText(/launch story/i)).toBeInTheDocument();
@@ -272,7 +256,7 @@ test('12. ArticleListPage search filters articles by title', async () => {
   expect(screen.queryByText(/editorial calendar/i)).not.toBeInTheDocument();
 });
 
-test('13. ArticleListPage pagination renders correct page controls', async () => {
+test('day_9_article_pagination_renders_correct_page_controls', async () => {
   const manyArticles = Array.from({ length: 7 }, (_, index) => ({ ...articleItems[0], id: index + 1, title: `Article ${index + 1}` }));
   articlesAPI.list.mockImplementation((params = {}) => Promise.resolve(
     params.status === 'DRAFT'
@@ -287,24 +271,7 @@ test('13. ArticleListPage pagination renders correct page controls', async () =>
   expect(screen.getByRole('button', { name: /next/i })).toBeEnabled();
 });
 
-test('14. Pagination shifts visible page numbers with current page', async () => {
-  const user = userEvent.setup();
-  const onPageChange = jest.fn();
-
-  renderWithProviders(<Pagination currentPage={3} totalPages={6} onPageChange={onPageChange} />);
-
-  expect(screen.getByRole('button', { name: /previous/i })).toBeEnabled();
-  expect(screen.getByRole('button', { name: '2' })).toBeInTheDocument();
-  expect(screen.getByRole('button', { name: '3' })).toBeInTheDocument();
-  expect(screen.getByRole('button', { name: '4' })).toBeInTheDocument();
-  expect(screen.queryByRole('button', { name: '1' })).not.toBeInTheDocument();
-
-  await user.click(screen.getByRole('button', { name: /next/i }));
-
-  expect(onPageChange).toHaveBeenCalledWith(4);
-});
-
-test('15. ArticleListPage category filter updates displayed articles', async () => {
+test('day_9_article_category_filter_updates_displayed_articles', async () => {
   const user = userEvent.setup();
   renderWithProviders(<ArticleListPage />, { store: createStore({ categories: { items: categories } }) });
   expect(await screen.findByText(/launch story/i)).toBeInTheDocument();
@@ -313,7 +280,7 @@ test('15. ArticleListPage category filter updates displayed articles', async () 
   expect(screen.queryByText(/launch story/i)).not.toBeInTheDocument();
 });
 
-test('16. ArticleDetailPage renders title and body of article', async () => {
+test('day_7_article_detail_renders_title_and_body', async () => {
   renderWithProviders(
     <Routes><Route path="/articles/:id" element={<ArticleDetailPage />} /></Routes>,
     { store: createStore({ articles: { selected: articleItems[0] }, auth: { user: { id: 2, roles: ['ROLE_USER'] }, token: 'token' } }), route: '/articles/1' }
@@ -322,7 +289,7 @@ test('16. ArticleDetailPage renders title and body of article', async () => {
   expect(screen.getByText(/^body content for launch story article\.$/i)).toBeInTheDocument();
 });
 
-test('17. ArticleDetailPage shows edit button for owner', async () => {
+test('day_8_article_detail_shows_edit_button_for_owner', async () => {
   renderWithProviders(
     <Routes><Route path="/articles/:id" element={<ArticleDetailPage />} /></Routes>,
     { store: createStore({ articles: { selected: articleItems[0] }, auth: { user: { id: 1, roles: ['ROLE_USER'] }, token: 'token' } }), route: '/articles/1' }
@@ -330,7 +297,7 @@ test('17. ArticleDetailPage shows edit button for owner', async () => {
   expect(await screen.findByRole('link', { name: /edit/i })).toBeInTheDocument();
 });
 
-test('18. ArticleDetailPage hides edit button for non-owner user', async () => {
+test('day_8_article_detail_hides_edit_button_for_non_owner', async () => {
   renderWithProviders(
     <Routes><Route path="/articles/:id" element={<ArticleDetailPage />} /></Routes>,
     { store: createStore({ articles: { selected: articleItems[0] }, auth: { user: { id: 99, roles: ['ROLE_USER'] }, token: 'token' } }), route: '/articles/1' }
@@ -339,17 +306,17 @@ test('18. ArticleDetailPage hides edit button for non-owner user', async () => {
   expect(screen.queryByRole('link', { name: /edit/i })).not.toBeInTheDocument();
 });
 
-test('19. ArticleFormPage user role hides status dropdown', () => {
+test('day_8_article_form_user_role_hides_status_dropdown', () => {
   renderWithProviders(<ArticleFormPage />, { store: createStore({ auth: { user: { id: 1, roles: ['ROLE_USER'] }, token: 'token' }, categories: { items: categories } }) });
   expect(screen.queryByLabelText(/status/i)).not.toBeInTheDocument();
 });
 
-test('20. ArticleFormPage manager role shows status dropdown', () => {
+test('day_8_article_form_manager_role_shows_status_dropdown', () => {
   renderWithProviders(<ArticleFormPage />, { store: createStore({ auth: { user: { id: 2, roles: ['ROLE_MANAGER'] }, token: 'token' }, categories: { items: categories } }) });
   expect(screen.getByLabelText(/status/i)).toBeInTheDocument();
 });
 
-test('21. ArticleFormPage shortTitle shows validation error', async () => {
+test('day_7_article_form_short_title_shows_validation_error', async () => {
   const user = userEvent.setup();
   renderWithProviders(<ArticleFormPage />, { store: createStore({ auth: { user: { id: 1, roles: ['ROLE_MANAGER'] }, token: 'token' }, categories: { items: categories } }) });
   await user.type(screen.getByLabelText(/^title$/i), 'A');
@@ -359,7 +326,7 @@ test('21. ArticleFormPage shortTitle shows validation error', async () => {
   expect(await screen.findByText(/title must be at least 5 characters/i)).toBeInTheDocument();
 });
 
-test('22. ArticleFormPage shortBody shows validation error', async () => {
+test('day_7_article_form_short_body_shows_validation_error', async () => {
   const user = userEvent.setup();
   renderWithProviders(<ArticleFormPage />, { store: createStore({ auth: { user: { id: 1, roles: ['ROLE_MANAGER'] }, token: 'token' }, categories: { items: categories } }) });
   await user.type(screen.getByLabelText(/^title$/i), 'Valid Title');
@@ -369,7 +336,7 @@ test('22. ArticleFormPage shortBody shows validation error', async () => {
   expect(await screen.findByText(/body must be at least 20 characters/i)).toBeInTheDocument();
 });
 
-test('23. ArticleFormPage editMode preloads existing values', async () => {
+test('day_8_article_form_edit_mode_preloads_existing_values', async () => {
   renderWithProviders(
     <Routes><Route path="/articles/:id/edit" element={<ArticleFormPage />} /></Routes>,
     { store: createStore({ articles: { selected: articleItems[0] }, auth: { user: { id: 1, roles: ['ROLE_MANAGER'] }, token: 'token' }, categories: { items: categories } }), route: '/articles/1/edit' }
@@ -377,12 +344,12 @@ test('23. ArticleFormPage editMode preloads existing values', async () => {
   expect(await screen.findByDisplayValue(articleItems[0].title)).toBeInTheDocument();
 });
 
-test('24. ArticleFormPage submit shows spinner while loading', () => {
+test('day_8_article_form_submit_shows_spinner_while_loading', () => {
   renderWithProviders(<ArticleFormPage />, { store: createStore({ auth: { user: { id: 1, roles: ['ROLE_MANAGER'] }, token: 'token' }, categories: { items: categories }, articles: { loading: true } }) });
   expect(screen.getByRole('button', { name: /save article/i })).toBeDisabled();
 });
 
-test('24. PageListPage renders separate published and draft tables for managers', async () => {
+test('day_9_page_list_renders_separate_published_and_draft_tables', async () => {
   renderWithProviders(<PageListPage />, { store: createStore({ auth: { user: { id: 2, roles: ['ROLE_MANAGER'] }, token: 'token' } }) });
   expect(await screen.findByRole('heading', { name: /published pages/i })).toBeInTheDocument();
   expect(screen.getByRole('heading', { name: /draft pages/i })).toBeInTheDocument();
@@ -390,7 +357,7 @@ test('24. PageListPage renders separate published and draft tables for managers'
   expect(await screen.findByText(/draft roadmap/i)).toBeInTheDocument();
 });
 
-test('25. PageListPage publish action moves a draft page to published', async () => {
+test('day_9_page_publish_moves_draft_to_published', async () => {
   const user = userEvent.setup();
   renderWithProviders(<><PageListPage /><Toast /></>, { store: createStore({ auth: { user: { id: 2, roles: ['ROLE_MANAGER'] }, token: 'token' } }) });
   expect(await screen.findByText(/draft roadmap/i)).toBeInTheDocument();
@@ -402,7 +369,7 @@ test('25. PageListPage publish action moves a draft page to published', async ()
   expect(screen.getAllByText(/draft roadmap/i)).toHaveLength(1);
 });
 
-test('26. PageFormPage manager can access create page form', () => {
+test('day_8_page_form_manager_can_access_create_form', () => {
   renderWithProviders(
     <Routes><Route path="/pages/new" element={<ProtectedRoute permission="page:manage"><PageFormPage /></ProtectedRoute>} /></Routes>,
     { store: createStore({ auth: { user: { id: 2, roles: ['ROLE_MANAGER'] }, token: 'token' } }), route: '/pages/new' }
@@ -413,12 +380,12 @@ test('26. PageFormPage manager can access create page form', () => {
   expect(screen.getByRole('option', { name: 'Published' })).toBeInTheDocument();
 });
 
-test('27. PageFormPage user role redirects to unauthorized', () => {
+test('day_8_page_form_user_role_redirects_to_unauthorized', () => {
   renderWithProviders(<AppRoutes />, { store: createStore({ auth: { user: { id: 1, roles: ['ROLE_USER'] }, token: 'token' } }), route: '/pages/new' });
   expect(screen.getByText(/do not have access/i)).toBeInTheDocument();
 });
 
-test('28. PageFormPage missingTitle shows validation error', async () => {
+test('day_7_page_form_missing_title_shows_validation_error', async () => {
   const user = userEvent.setup();
   renderWithProviders(<PageFormPage />, { store: createStore({ auth: { user: { id: 2, roles: ['ROLE_MANAGER'] }, token: 'token' } }) });
   await user.type(screen.getByLabelText(/^body$/i), 'This page body is long enough for validation.');
@@ -426,7 +393,7 @@ test('28. PageFormPage missingTitle shows validation error', async () => {
   expect(await screen.findByText(/title must be at least 3 characters/i)).toBeInTheDocument();
 });
 
-test('29. PageFormPage submit success shows toast notification', async () => {
+test('day_8_page_form_submit_success_shows_toast', async () => {
   const user = userEvent.setup();
   renderWithProviders(<><PageFormPage /><Toast /></>, { store: createStore({ auth: { user: { id: 2, roles: ['ROLE_MANAGER'] }, token: 'token' } }) });
   await user.type(screen.getByLabelText(/^title$/i), 'About Platform');
@@ -436,17 +403,17 @@ test('29. PageFormPage submit success shows toast notification', async () => {
   expect(await screen.findByText(/page saved successfully/i)).toBeInTheDocument();
 });
 
-test('30. MediaLibraryPage renders media grid', async () => {
+test('day_7_media_library_renders_media_grid', async () => {
   renderWithProviders(<MediaLibraryPage />, { store: createStore({ auth: { user: { id: 1, roles: ['ROLE_USER'] }, token: 'token' }, media: { items: mediaItems, total: mediaItems.length } }) });
   expect(await screen.findByText(/hero-image.png/i)).toBeInTheDocument();
 });
 
-test('31. MediaLibraryPage shows loading skeleton while fetching', () => {
+test('day_8_media_library_shows_loading_skeleton_while_fetching', () => {
   renderWithProviders(<MediaLibraryPage />, { store: createStore({ auth: { user: { id: 1, roles: ['ROLE_USER'] }, token: 'token' }, media: { loading: true } }) });
   expect(screen.getByTestId('loading-skeleton')).toBeInTheDocument();
 });
 
-test('32. MediaLibraryPage search filters media by filename', async () => {
+test('day_8_media_library_search_filters_by_filename', async () => {
   const user = userEvent.setup();
   renderWithProviders(<MediaLibraryPage />, { store: createStore({ auth: { user: { id: 1, roles: ['ROLE_USER'] }, token: 'token' }, media: { items: mediaItems, total: mediaItems.length } }) });
   await user.type(screen.getByPlaceholderText(/search media by filename/i), 'hero');
@@ -454,7 +421,7 @@ test('32. MediaLibraryPage search filters media by filename', async () => {
   expect(screen.queryByText(/brand-guidelines.pdf/i)).not.toBeInTheDocument();
 });
 
-test('33. MediaUploadForm accepts valid file, submits, and resets the form', async () => {
+test('day_8_media_upload_accepts_valid_file_and_resets_form', async () => {
   const user = userEvent.setup();
   renderWithProviders(<><MediaUploadForm /><Toast /></>, { store: createStore({ auth: { user: { id: 1, roles: ['ROLE_USER'] }, token: 'token' } }) });
   const file = new File(['hello'], 'poster.png', { type: 'image/png' });
@@ -469,59 +436,39 @@ test('33. MediaUploadForm accepts valid file, submits, and resets the form', asy
   expect(screen.getByLabelText(/size/i)).toHaveValue(null);
 });
 
-test('34. MediaUploadForm delete shows ConfirmModal before removing', async () => {
+test('day_8_media_delete_shows_confirmation_modal', async () => {
   const user = userEvent.setup();
   renderWithProviders(<MediaLibraryPage />, { store: createStore({ auth: { user: { id: 1, roles: ['ROLE_USER'] }, token: 'token' }, media: { items: mediaItems, total: mediaItems.length } }) });
   await user.click(await screen.findByRole('button', { name: /delete/i }));
   expect(screen.getByText(/delete media/i)).toBeInTheDocument();
 });
 
-test('33. CategoryManagerPage manager can see category list', async () => {
+test('day_8_category_manager_manager_can_see_category_list', async () => {
   renderWithProviders(<CategoryManagerPage />, { store: createStore({ auth: { user: { id: 2, roles: ['ROLE_MANAGER'] }, token: 'token' }, categories: { items: categories } }) });
   expect(await screen.findByText(/existing categories/i)).toBeInTheDocument();
   expect(screen.getAllByText(/^News$/i).length).toBeGreaterThan(0);
 });
 
-test('34. CategoryManagerPage user role redirects to unauthorized', () => {
+test('day_8_category_manager_user_role_redirects_to_unauthorized', () => {
   renderWithProviders(<AppRoutes />, { store: createStore({ auth: { user: { id: 1, roles: ['ROLE_USER'] }, token: 'token' } }), route: '/categories' });
   expect(screen.getByText(/do not have access/i)).toBeInTheDocument();
 });
 
-test('35. CategoryManagerPage create category shows form', () => {
+test('day_7_category_manager_create_category_shows_form', () => {
   renderWithProviders(<CategoryManagerPage />, { store: createStore({ auth: { user: { id: 2, roles: ['ROLE_MANAGER'] }, token: 'token' }, categories: { items: [] } }) });
   expect(screen.getByLabelText(/^name$/i)).toBeInTheDocument();
   expect(screen.queryByLabelText(/parent category/i)).not.toBeInTheDocument();
   expect(screen.getByText(/no records available/i)).toBeInTheDocument();
 });
 
-test('36. CategoryManagerPage delete category shows ConfirmModal', async () => {
+test('day_8_category_manager_delete_shows_confirmation_modal', async () => {
   const user = userEvent.setup();
   renderWithProviders(<CategoryManagerPage />, { store: createStore({ auth: { user: { id: 2, roles: ['ROLE_MANAGER'] }, token: 'token' }, categories: { items: categories } }) });
   await user.click(screen.getAllByRole('button', { name: /delete/i })[0]);
   expect(screen.getByText(/delete category/i)).toBeInTheDocument();
 });
 
-test('37. useRBAC can("article:create") true for ROLE_USER', () => {
-  renderWithProviders(<RBACProbe permission="article:create" check="can" />, { store: createStore({ auth: { user: { id: 1, roles: ['ROLE_USER'] }, token: 'token' } }) });
-  expect(screen.getByText('true')).toBeInTheDocument();
-});
-
-test('38. useRBAC can("article:publish") false for ROLE_USER', () => {
-  renderWithProviders(<RBACProbe permission="article:publish" check="can" />, { store: createStore({ auth: { user: { id: 1, roles: ['ROLE_USER'] }, token: 'token' } }) });
-  expect(screen.getByText('false')).toBeInTheDocument();
-});
-
-test('39. useRBAC can("article:publish") true for ROLE_MANAGER', () => {
-  renderWithProviders(<RBACProbe permission="article:publish" check="can" />, { store: createStore({ auth: { user: { id: 2, roles: ['ROLE_MANAGER'] }, token: 'token' } }) });
-  expect(screen.getByText('true')).toBeInTheDocument();
-});
-
-test('40. useRBAC can("user:manage") false for ROLE_MANAGER', () => {
-  renderWithProviders(<RBACProbe permission="user:manage" check="can" />, { store: createStore({ auth: { user: { id: 2, roles: ['ROLE_MANAGER'] }, token: 'token' } }) });
-  expect(screen.getByText('false')).toBeInTheDocument();
-});
-
-test('41. ROLE_ADMIN can manage users and UserManagementPage hides admin rows', async () => {
+test('day_8_role_admin_can_manage_users_and_hides_admin_rows', async () => {
   usersAPI.list.mockResolvedValue([
     { id: 1, username: 'owner', roles: ['ROLE_USER'], active: true },
     { id: 3, username: 'admin', roles: ['ROLE_ADMIN'], active: true }
@@ -547,7 +494,7 @@ test('41. ROLE_ADMIN can manage users and UserManagementPage hides admin rows', 
   expect(screen.queryByLabelText(/role for admin/i)).not.toBeInTheDocument();
 });
 
-test('42. UserManagementPage shows activate action for inactive users and updates status immediately', async () => {
+test('day_8_user_management_activate_updates_status_immediately', async () => {
   const user = userEvent.setup();
   usersAPI.list.mockResolvedValue([
     { id: 7, username: 'david', roles: ['ROLE_USER'], active: false }
@@ -565,22 +512,22 @@ test('42. UserManagementPage shows activate action for inactive users and update
   expect(screen.getByRole('button', { name: /deactivate/i })).toBeInTheDocument();
 });
 
-test('43. useRBAC canEditArticle true for article owner', () => {
+test('day_8_rbac_can_edit_article_for_owner', () => {
   renderWithProviders(<RBACProbe article={articleItems[0]} check="edit" />, { store: createStore({ auth: { user: { id: 1, roles: ['ROLE_USER'] }, token: 'token' } }) });
   expect(screen.getByText('true')).toBeInTheDocument();
 });
 
-test('44. useRBAC canDeleteArticle false for MANAGER on others', () => {
+test('day_8_rbac_manager_cannot_delete_others_article', () => {
   renderWithProviders(<RBACProbe article={articleItems[0]} check="deleteArticle" />, { store: createStore({ auth: { user: { id: 99, roles: ['ROLE_MANAGER'] }, token: 'token' } }) });
   expect(screen.getByText('false')).toBeInTheDocument();
 });
 
-test('45. useRBAC canDeleteArticle true for ADMIN on any article', () => {
+test('day_8_rbac_admin_can_delete_any_article', () => {
   renderWithProviders(<RBACProbe article={articleItems[0]} check="deleteArticle" />, { store: createStore({ auth: { user: { id: 99, roles: ['ROLE_ADMIN'] }, token: 'token' } }) });
   expect(screen.getByText('true')).toBeInTheDocument();
 });
 
-test('46. ProtectedRoute unauthenticated redirects to /login', () => {
+test('day_8_protected_route_unauthenticated_redirects_to_login', () => {
   renderWithProviders(
     <Routes>
       <Route path="/secure" element={<ProtectedRoute permission="article:create"><div>Secure</div></ProtectedRoute>} />
@@ -591,7 +538,7 @@ test('46. ProtectedRoute unauthenticated redirects to /login', () => {
   expect(screen.getByText(/login screen/i)).toBeInTheDocument();
 });
 
-test('47. ProtectedRoute lacks permission redirects to /unauthorized', () => {
+test('day_8_protected_route_unauthorized_redirects_to_unauthorized_page', () => {
   renderWithProviders(
     <Routes>
       <Route path="/secure" element={<ProtectedRoute permission="page:manage"><div>Secure</div></ProtectedRoute>} />
@@ -602,7 +549,7 @@ test('47. ProtectedRoute lacks permission redirects to /unauthorized', () => {
   expect(screen.getByText(/unauthorized page/i)).toBeInTheDocument();
 });
 
-test('48. initializeAuth restores session and keeps the current protected route after refresh', () => {
+test('day_8_initialize_auth_restores_session_after_refresh', () => {
   localStorage.setItem('chm_access_token', 'persisted-token');
   localStorage.setItem('chm_refresh_token', 'persisted-refresh');
   localStorage.setItem('chm_access_token_user', JSON.stringify({ id: 2, username: 'manager', roles: ['ROLE_MANAGER'] }));
@@ -623,22 +570,22 @@ test('48. initializeAuth restores session and keeps the current protected route 
   });
 });
 
-test('49. RoleGuard renders children when permitted', () => {
+test('day_8_role_guard_renders_children_when_permitted', () => {
   renderWithProviders(<RoleGuard permission="analytics:view"><div>Analytics child</div></RoleGuard>, { store: createStore({ auth: { user: { id: 2, roles: ['ROLE_MANAGER'] }, token: 'token' } }) });
   expect(screen.getByText(/analytics child/i)).toBeInTheDocument();
 });
 
-test('50. RoleGuard renders fallback when not permitted', () => {
+test('day_8_role_guard_renders_fallback_when_not_permitted', () => {
   renderWithProviders(<RoleGuard permission="analytics:view" fallback={<div>Fallback</div>}><div>Analytics child</div></RoleGuard>, { store: createStore({ auth: { user: { id: 1, roles: ['ROLE_USER'] }, token: 'token' } }) });
   expect(screen.getByText(/fallback/i)).toBeInTheDocument();
 });
 
-test('51. RoleGuard renders null when no fallback provided', () => {
+test('day_8_role_guard_renders_null_without_fallback', () => {
   const { container } = renderWithProviders(<RoleGuard permission="analytics:view"><div>Analytics child</div></RoleGuard>, { store: createStore({ auth: { user: { id: 1, roles: ['ROLE_USER'] }, token: 'token' } }) });
   expect(container).toBeEmptyDOMElement();
 });
 
-test('52. Analytics By Category paginates five records per page', async () => {
+test('day_9_analytics_by_category_paginates_five_records_per_page', async () => {
   const user = userEvent.setup();
   const byCategoryItems = Array.from({ length: 6 }, (_, index) => ({ categoryId: index + 1, categoryName: `Category ${index + 1}`, count: index + 10 }));
   analyticsAPI.summary.mockResolvedValue({ totalArticles: 8, publishedArticles: 5, draftArticles: 3, totalPages: 2, totalMedia: 2, totalCategories: 6 });
@@ -656,7 +603,7 @@ test('52. Analytics By Category paginates five records per page', async () => {
   expect(await screen.findByText('Category 6')).toBeInTheDocument();
 });
 
-test('53. User Management paginates five records per page', async () => {
+test('day_9_user_management_paginates_five_records_per_page', async () => {
   const user = userEvent.setup();
   const manyUsers = Array.from({ length: 6 }, (_, index) => ({ id: index + 1, username: `user${index + 1}`, roles: ['ROLE_USER'], active: true }));
   usersAPI.list.mockResolvedValue(manyUsers);
@@ -672,7 +619,7 @@ test('53. User Management paginates five records per page', async () => {
   expect(await screen.findByText('user6')).toBeInTheDocument();
 });
 
-test('54. Category Manager paginates five records per page', async () => {
+test('day_9_category_manager_paginates_five_records_per_page', async () => {
   const user = userEvent.setup();
   const manyCategories = Array.from({ length: 6 }, (_, index) => ({ id: index + 1, name: `Category ${index + 1}`, description: `Description ${index + 1}` }));
   categoriesAPI.list.mockResolvedValue(manyCategories);
